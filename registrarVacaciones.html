@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Registrar Vacaciones</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+rel="stylesheet">
+
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+
+<style>
+
+:root{
+    --ink:#122B4D;
+    --ink-2:#1B4372;
+    --amber:#E2A63C;
+    --amber-dark:#C68526;
+    --bg:#F3F5FA;
+    --border:#E3E8F2;
+    --muted:#66738D;
+    --success:#2E9E6C;
+    --danger:#D5504A;
+    --radius:18px;
+}
+
+body{
+    background:
+        radial-gradient(circle at top right, rgba(226,166,60,.10), transparent 45%),
+        radial-gradient(circle at bottom left, rgba(18,43,77,.05), transparent 40%),
+        var(--bg);
+    font-family:'Inter',sans-serif;
+    color:#1F2937;
+    min-height:100vh;
+}
+
+h1,h2,h3,h4,h5,.brand-font{
+    font-family:'Fraunces',serif;
+}
+
+.mono{
+    font-family:'JetBrains Mono',monospace;
+}
+
+/* NAVBAR */
+
+.navbar-ticket{
+    background:linear-gradient(120deg,var(--ink),var(--ink-2))!important;
+}
+
+.navbar-ticket .navbar-brand{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:.01em;
+}
+
+.navbar-ticket .navbar-brand i{
+    color:var(--amber);
+    display:inline-block;
+    transform:rotate(45deg);
+    margin-right:.45rem;
+}
+
+.navbar-ticket .nav-link{
+    font-weight:500;
+    border-radius:999px;
+    padding:.5rem 1rem!important;
+    transition:background .2s ease;
+}
+
+.navbar-ticket .nav-link:hover,
+.navbar-ticket .nav-link:focus{
+    background:rgba(255,255,255,.12);
+}
+
+.navbar-ticket .dropdown-menu{
+    border:none;
+    border-radius:14px;
+    box-shadow:0 12px 30px -10px rgba(18,43,77,.35);
+    overflow:hidden;
+    padding:.4rem;
+}
+
+.navbar-ticket .dropdown-item{
+    border-radius:10px;
+    padding:.55rem .8rem;
+    font-weight:500;
+}
+
+.navbar-ticket .dropdown-item:hover{
+    background:rgba(226,166,60,.15);
+}
+
+/* CARDS */
+
+.card{
+    border:none;
+    border-radius:var(--radius);
+    box-shadow:0 16px 40px -18px rgba(18,43,77,.28);
+    overflow:visible;
+}
+
+.ticket-header{
+    position:relative;
+    background:linear-gradient(120deg,var(--ink),var(--ink-2));
+    color:#fff;
+    border-radius:var(--radius) var(--radius) 0 0;
+    padding:1.4rem 1.75rem 1.65rem;
+    border-bottom:2px dashed rgba(255,255,255,.35);
+    overflow:hidden;
+}
+
+.ticket-header h4{
+    margin-bottom:.15rem;
+    font-weight:600;
+}
+
+.ticket-header p{
+    margin-bottom:0;
+    font-size:.85rem;
+    color:rgba(255,255,255,.75);
+}
+
+.ticket-header .icon-wrap{
+    width:44px;
+    height:44px;
+    border-radius:12px;
+    background:rgba(255,255,255,.14);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.25rem;
+    margin-right:.85rem;
+    flex:none;
+}
+
+.notch{
+    position:absolute;
+    bottom:-12px;
+    width:24px;
+    height:24px;
+    background:var(--bg);
+    border-radius:50%;
+}
+
+.notch-left{ left:-12px; }
+.notch-right{ right:-12px; }
+
+.card-body{
+    padding:2rem;
+}
+
+/* FORMS */
+
+.form-label{
+    font-size:.76rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:.35rem;
+}
+
+.form-control,
+.form-select{
+    border-radius:12px;
+    border:1.5px solid var(--border);
+    padding:.65rem .9rem;
+}
+
+.form-control:focus,
+.form-select:focus{
+    border-color:var(--amber);
+    box-shadow:0 0 0 .2rem rgba(226,166,60,.25);
+}
+
+.form-control[readonly]{
+    background:#F8FAFD;
+}
+
+.saldo-box{
+    background:linear-gradient(120deg, rgba(46,158,108,.12), rgba(46,158,108,.04));
+    border:1.5px solid rgba(46,158,108,.35);
+    border-radius:14px;
+    padding:.7rem 1rem;
+}
+
+/* SELECT2 */
+
+.select2-container{
+    width:100%!important;
+}
+
+.select2-container--bootstrap-5 .select2-selection{
+    border-radius:12px!important;
+    border:1.5px solid var(--border)!important;
+    padding:.32rem .5rem!important;
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection{
+    border-color:var(--amber)!important;
+    box-shadow:0 0 0 .2rem rgba(226,166,60,.25)!important;
+}
+
+/* BUTTONS */
+
+.btn{
+    border-radius:12px;
+    font-weight:600;
+    padding:.65rem 1.1rem;
+}
+
+.btn-success{
+    --bs-btn-bg:var(--success);
+    --bs-btn-border-color:var(--success);
+    --bs-btn-hover-bg:#26875C;
+    --bs-btn-hover-border-color:#26875C;
+}
+
+.btn-primary{
+    --bs-btn-bg:var(--ink);
+    --bs-btn-border-color:var(--ink);
+    --bs-btn-hover-bg:var(--ink-2);
+    --bs-btn-hover-border-color:var(--ink-2);
+}
+
+.btn-danger{
+    --bs-btn-bg:var(--danger);
+    --bs-btn-border-color:var(--danger);
+    --bs-btn-hover-bg:#BE3E39;
+    --bs-btn-hover-border-color:#BE3E39;
+}
+
+/* TABLE */
+
+.table-responsive{
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid var(--border);
+}
+
+.table thead th{
+    background:linear-gradient(120deg,var(--ink),var(--ink-2));
+    color:#fff;
+    font-size:.74rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:600;
+    border:none;
+    padding:.9rem 1rem;
+    white-space:nowrap;
+}
+
+.table tbody td{
+    padding:.8rem 1rem;
+    vertical-align:middle;
+    border-color:var(--border);
+    font-size:.92rem;
+}
+
+.table-hover tbody tr:hover{
+    background:rgba(226,166,60,.08);
+}
+
+/* MODAL */
+
+.modal-content{
+    border:none;
+    border-radius:var(--radius);
+    overflow:hidden;
+}
+
+.modal-header{
+    background:linear-gradient(120deg,var(--ink),var(--ink-2));
+    color:#fff;
+    border-bottom:2px dashed rgba(255,255,255,.35);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 576px){
+
+    .ticket-header{
+        padding:1.15rem 1.25rem 1.4rem;
+    }
+
+    .ticket-header h4{
+        font-size:1.05rem;
+    }
+
+    .card-body{
+        padding:1.25rem;
+    }
+
+    .table thead th,
+    .table tbody td{
+        padding:.6rem .55rem;
+        font-size:.82rem;
+    }
+
+    .btn{
+        font-size:.9rem;
+        padding:.6rem .9rem;
+    }
+}
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-ticket shadow-sm sticky-top">
+
+<div class="container">
+
+<a class="navbar-brand" href="#">
+<i class="bi bi-airplane-fill"></i>Sistema de Vacaciones
+</a>
+
+<button class="navbar-toggler"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#menu">
+
+<span class="navbar-toggler-icon"></span>
+
+</button>
+
+<div class="collapse navbar-collapse" id="menu">
+
+<ul class="navbar-nav ms-auto">
+
+<li class="nav-item dropdown">
+
+<a class="nav-link dropdown-toggle"
+href="#"
+data-bs-toggle="dropdown">
+
+<i class="bi bi-people me-1"></i>Personal
+
+</a>
+
+<ul class="dropdown-menu dropdown-menu-end">
+
+<li>
+<a class="dropdown-item" href="registrarPersonal.html">
+<i class="bi bi-person-plus me-2"></i>Registrar Personal
+</a>
+</li>
+
+<li>
+<a class="dropdown-item" href="listaPersonal.html">
+<i class="bi bi-list-ul me-2"></i>Listado del Personal
+</a>
+</li>
+
+</ul>
+
+</li>
+
+<li class="nav-item dropdown">
+
+<a class="nav-link dropdown-toggle"
+href="#"
+data-bs-toggle="dropdown">
+
+<i class="bi bi-calendar2-week me-1"></i>Vacaciones
+
+</a>
+
+<ul class="dropdown-menu dropdown-menu-end">
+
+<li>
+<a class="dropdown-item" href="registrarVacaciones.html">
+<i class="bi bi-calendar2-plus me-2"></i>Registrar Vacaciones
+</a>
+</li>
+
+<li>
+<a class="dropdown-item" href="vacaciones.html">
+<i class="bi bi-list-ul me-2"></i>Listado Vacaciones
+</a>
+</li>
+
+</ul>
+
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+</nav>
+
+
+
+<div class="container mt-4 mt-md-5 pb-5">
+
+
+<div class="card">
+
+<div class="ticket-header d-flex align-items-center">
+
+<span class="notch notch-left"></span>
+<span class="notch notch-right"></span>
+
+<span class="icon-wrap">
+<i class="bi bi-calendar2-plus-fill"></i>
+</span>
+
+<div>
+<h4>Registrar Vacaciones</h4>
+<p>Asigna días de descanso a un colaborador</p>
+</div>
+
+</div>
+
+
+<div class="card-body">
+
+
+<!-- PERSONA -->
+
+<div class="row align-items-end g-3">
+
+
+<div class="col-md-9">
+
+
+<label class="form-label">
+
+Persona
+
+</label>
+
+
+<select id="persona" class="form-select">
+
+<option value="">
+
+Seleccione una persona
+
+</option>
+
+
+</select>
+
+
+</div>
+
+
+
+<div class="col-md-3">
+
+
+<button
+type="button"
+class="btn btn-primary w-100"
+onclick="verDetalle()">
+
+<i class="bi bi-eye-fill me-1"></i>Ver detalle
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+<hr class="my-4">
+
+
+
+<!-- SALDO -->
+
+
+<div class="row">
+
+
+<div class="col-md-4">
+
+
+<label class="form-label">
+
+Vacaciones disponibles
+
+</label>
+
+
+<div class="saldo-box">
+<input
+
+type="text"
+
+id="saldo"
+
+class="form-control text-center fw-bold text-success mono border-0 bg-transparent p-0"
+
+readonly>
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+<hr class="my-4">
+
+
+
+<!-- FECHAS -->
+
+
+<div class="row g-3">
+
+
+<div class="col-md-4">
+
+
+<label class="form-label">
+
+Del
+
+</label>
+
+
+<input
+
+type="date"
+
+id="fechaSalida"
+
+class="form-control"
+
+onkeydown="return false;"
+
+onpaste="return false;">
+
+
+</div>
+
+
+
+
+<div class="col-md-4">
+
+
+<label class="form-label">
+
+Al
+
+</label>
+
+
+<input
+
+type="date"
+
+id="fechaRegreso"
+
+class="form-control"
+
+onkeydown="return false;"
+
+onpaste="return false;">
+
+
+</div>
+
+
+
+
+<div class="col-md-4">
+
+
+<label class="form-label">
+
+Días tomados
+
+</label>
+
+
+<input
+
+type="number"
+
+id="dias"
+
+class="form-control mono"
+
+readonly>
+
+
+</div>
+
+
+</div>
+
+
+
+<button
+
+id="btnRegistrar"
+
+class="btn btn-success w-100 mt-4">
+
+<i class="bi bi-check2-circle me-2"></i>Registrar Vacaciones
+
+
+</button>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- MODAL DETALLE -->
+
+
+<div class="modal fade" id="modalDetalle">
+
+
+<div class="modal-dialog modal-lg modal-dialog-scrollable">
+
+
+<div class="modal-content">
+
+
+<div class="modal-header">
+
+
+<h5 class="mb-0">
+<i class="bi bi-person-vcard me-2"></i>Detalle del Personal
+</h5>
+
+
+<button
+class="btn-close btn-close-white"
+data-bs-dismiss="modal">
+
+</button>
+
+
+</div>
+
+
+
+<div class="modal-body p-4">
+
+
+<div id="detallePersona">
+
+</div>
+
+
+
+<hr class="my-4">
+
+
+
+<h6 class="text-uppercase fw-bold" style="color:var(--muted);letter-spacing:.06em;font-size:.8rem;">
+<i class="bi bi-airplane me-1"></i>Historial de Vacaciones
+</h6>
+
+
+
+<div class="table-responsive mt-3">
+
+<table class="table table-bordered mb-0">
+
+
+<thead class="table-light">
+
+<tr>
+
+<th>
+Del
+</th>
+
+<th>
+Al
+</th>
+
+<th>
+Días tomados
+</th>
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody id="historialVacaciones">
+
+
+<tr>
+
+<td colspan="3" class="text-center text-muted py-3">
+
+No hay vacaciones registradas
+
+</td>
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<script src="config.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+<script src="registrarVacaciones.js"></script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+</body>
+
+</html>
