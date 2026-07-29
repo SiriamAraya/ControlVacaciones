@@ -67,7 +67,7 @@ async function cargarPersonal() {
 
     <tr>
 
-        <td colspan="4" class="text-center">
+        <td colspan="5" class="text-center">
 
             Cargando...
 
@@ -109,6 +109,8 @@ async function cargarPersonal() {
 
             cedula: p.cedula,
 
+            puesto: p.puesto || "",
+
             saldoVacaciones: p.saldoVacaciones
 
         });
@@ -137,7 +139,7 @@ function mostrarTablaPersonal() {
 
         <tr>
 
-            <td colspan="4" class="text-center">
+            <td colspan="5" class="text-center">
 
                 No hay personal registrado
 
@@ -161,6 +163,8 @@ function mostrarTablaPersonal() {
 
             <td>${p.cedula}</td>
 
+            <td>${p.puesto || "-"}</td>
+
             <td>${p.saldoVacaciones}</td>
 
             <td>
@@ -173,6 +177,13 @@ function mostrarTablaPersonal() {
 
     </button>
 
+    <a
+        href="registrarPersonal.html?id=${p.id}"
+        class="btn btn-warning btn-sm mb-1">
+
+        Editar
+
+    </a>
 
     <button
         class="btn btn-danger btn-sm"
@@ -241,6 +252,12 @@ async function verDetalle(idPersona) {
     document.getElementById("dCedula").innerHTML =
         persona.cedula;
 
+    document.getElementById("dPuesto").innerHTML =
+        persona.puesto || "-";
+
+    document.getElementById("dCorreo").innerHTML =
+        persona.correo || "-";
+
     document.getElementById("dTelefono").innerHTML =
         persona.telefono;
 
@@ -252,6 +269,9 @@ async function verDetalle(idPersona) {
 
     document.getElementById("dSaldo").innerHTML =
         persona.saldoVacaciones + " días";
+
+    document.getElementById("dBtnEditar").href =
+        "registrarPersonal.html?id=" + idPersona;
 
     cargarVacaciones(idPersona);
 

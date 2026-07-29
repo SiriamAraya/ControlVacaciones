@@ -117,6 +117,10 @@ async function cargarVacaciones(){
 
                 cedula:persona.cedula,
 
+                puesto:persona.puesto || "",
+
+                fechaIngreso:persona.fechaIngreso || "",
+
                 fechaSalida:v.fechaSalida,
 
                 fechaRegreso:v.fechaRegreso,
@@ -125,7 +129,9 @@ async function cargarVacaciones(){
 
                 diasRestantes:persona.saldoVacaciones,
 
-                fechaRegistro:v.fechaRegistro
+                fechaRegistro:v.fechaRegistro,
+
+                correlativo:v.correlativo || null
 
             });
 
@@ -671,6 +677,78 @@ return `${anio}-${mes}-${dia}`;
 
 
 //--------------------------------
+// CONSECUTIVO DE BOLETAS (BV-NN-AAAA)
+//
+// Se guarda en Firebase bajo consecutivos/boletas/{anio}
+// El año 2026 arranca en 9 (para continuar la numeración
+// manual previa BV-01 a BV-08). Cualquier otro año arranca
+// en 1 y se reinicia automáticamente al cambiar el año.
+//--------------------------------
+
+async function obtenerSiguienteConsecutivo(anio){
+
+    const ref =
+    window.db.ref("consecutivos/boletas/"+anio);
+
+    const snap =
+    await ref.once("value");
+
+    let siguiente;
+
+    if(snap.exists()){
+
+        siguiente = parseInt(snap.val()) + 1;
+
+    }else{
+
+        siguiente = (anio === 2026) ? 9 : 1;
+
+    }
+
+    await ref.set(siguiente);
+
+    return siguiente;
+
+}
+
+
+
+
+//--------------------------------
+// OBTENER (O CREAR) EL CORRELATIVO
+// DE UNA VACACIÓN ESPECÍFICA
+//--------------------------------
+
+async function obtenerCorrelativoBoleta(vacacion){
+
+    if(vacacion.correlativo){
+
+        return vacacion.correlativo;
+
+    }
+
+    const anio = new Date().getFullYear();
+
+    const numero =
+    await obtenerSiguienteConsecutivo(anio);
+
+    const correlativo =
+    "BV-" + String(numero).padStart(2,"0") + "-" + anio;
+
+    await window.db
+    .ref("vacaciones/"+vacacion.id)
+    .update({ correlativo });
+
+    vacacion.correlativo = correlativo;
+
+    return correlativo;
+
+}
+
+
+
+
+//--------------------------------
 // PDF LISTADO
 //--------------------------------
 
@@ -726,14 +804,14 @@ const margen = 14;
 
 // Encabezado con franja de color
 doc.setFillColor(21, 61, 107);
-doc.rect(0, 0, anchoPagina, 22, "F");
+doc.rect(0, 0, anchoPagina, 28, "F");
 
 
 if(logoImg){
 
     try{
 
-        doc.addImage(logoImg, "PNG", margen, 2, 18, 18);
+        doc.addImage(logoImg, "PNG", margen, 4, 18, 18);
 
     }catch(e){}
 
@@ -745,19 +823,32 @@ const xTitulo = logoImg ? margen + 24 : margen;
 
 doc.setTextColor(255,255,255);
 doc.setFont("helvetica","bold");
-doc.setFontSize(15);
+doc.setFontSize(9);
+doc.text(
+"Asociación Administradora del Acueducto y Alcantarillado",
+xTitulo,
+9
+);
+doc.text(
+"Sanitario de los Ángeles de Grecia",
+xTitulo,
+13.5
+);
+
+
+doc.setFontSize(14);
 doc.text(
 "Listado de Vacaciones",
 xTitulo,
-14
+22
 );
 
 doc.setFont("helvetica","normal");
-doc.setFontSize(9);
+doc.setFontSize(8);
 doc.text(
 "Generado: " + formatearFecha(new Date().toISOString().split("T")[0]),
 anchoPagina - margen,
-14,
+22,
 { align:"right" }
 );
 
@@ -787,7 +878,7 @@ v.diasRestantes
 doc.autoTable({
 
 
-startY:30,
+startY:36,
 
 
 head:[[
@@ -875,6 +966,12 @@ if(!vacacion){
 
 
 
+// asignar (o recuperar) el número consecutivo
+
+const correlativo =
+await obtenerCorrelativoBoleta(vacacion);
+
+
 
 const {jsPDF}=window.jspdf;
 
@@ -903,7 +1000,7 @@ imgReady.src = logo;
 
 imgReady.onload = function(){
 
-    crearContenidoBoleta(doc, vacacion, imgReady);
+    crearContenidoBoleta(doc, vacacion, imgReady, correlativo);
 
 };
 
@@ -911,7 +1008,7 @@ imgReady.onload = function(){
 
 imgReady.onerror = function(){
 
-    crearContenidoBoleta(doc, vacacion, null);
+    crearContenidoBoleta(doc, vacacion, null, correlativo);
 
 };
 
@@ -925,7 +1022,7 @@ imgReady.onerror = function(){
 // CONTENIDO BOLETA (diseño mejorado)
 //--------------------------------
 
-function crearContenidoBoleta(doc, v, logoImg){
+function crearContenidoBoleta(doc, v, logoImg, correlativo){
 
 
 // Paleta de colores
@@ -940,20 +1037,24 @@ const anchoPagina = doc.internal.pageSize.getWidth();
 const margen = 15;
 
 
+// Nombre de quien firma como Presidente Junta Directiva
+const nombrePresidente = "Alfonso Barrantes Rodríguez";
+
+
 
 //--------------------------------
 // ENCABEZADO CON FRANJA DE COLOR
 //--------------------------------
 
 doc.setFillColor(...azulOscuro);
-doc.rect(0, 0, anchoPagina, 38, "F");
+doc.rect(0, 0, anchoPagina, 44, "F");
 
 
 if(logoImg){
 
     try{
 
-        doc.addImage(logoImg, "PNG", margen, 6, 26, 26);
+        doc.addImage(logoImg, "PNG", margen, 8, 26, 26);
 
     }catch(e){}
 
@@ -962,31 +1063,59 @@ if(logoImg){
 
 doc.setTextColor(255,255,255);
 doc.setFont("helvetica","bold");
-doc.setFontSize(18);
+doc.setFontSize(10.5);
 doc.text(
-    "BOLETA DE VACACIONES",
+    "Asociación Administradora del Acueducto y Alcantarillado",
     anchoPagina/2,
-    18,
+    9,
+    { align:"center" }
+);
+doc.text(
+    "Sanitario de los Ángeles de Grecia",
+    anchoPagina/2,
+    14.5,
     { align:"center" }
 );
 
 
-doc.setFont("helvetica","normal");
-doc.setFontSize(10);
+doc.setFont("helvetica","bold");
+doc.setFontSize(16);
 doc.text(
-    "Documento oficial de aprobación de vacaciones",
+    "BOLETA DE VACACIONES",
     anchoPagina/2,
     26,
     { align:"center" }
 );
 
 
-// Fecha de emisión, esquina superior derecha
+doc.setFont("helvetica","normal");
 doc.setFontSize(9);
+doc.text(
+    "Documento oficial de aprobación de vacaciones",
+    anchoPagina/2,
+    33,
+    { align:"center" }
+);
+
+
+// Número consecutivo, esquina superior izquierda (sobre el logo)
+doc.setFont("helvetica","bold");
+doc.setFontSize(9);
+doc.text(
+    "N.° " + correlativo,
+    anchoPagina - margen,
+    8,
+    { align:"right" }
+);
+
+
+// Fecha de emisión, esquina superior derecha
+doc.setFont("helvetica","normal");
+doc.setFontSize(8.5);
 doc.text(
     "Emitido: " + formatearFecha(new Date().toISOString().split("T")[0]),
     anchoPagina - margen,
-    18,
+    14,
     { align:"right" }
 );
 
@@ -996,7 +1125,7 @@ doc.text(
 // SECCIÓN: DATOS DEL FUNCIONARIO
 //--------------------------------
 
-let y = 52;
+let y = 58;
 
 
 doc.setTextColor(...azulOscuro);
@@ -1013,17 +1142,18 @@ doc.line(margen, y+2, anchoPagina-margen, y+2);
 y += 12;
 
 
-const filasDatos = [
-    ["Nombre completo", v.nombre],
-    ["Cédula", v.cedula],
-    ["Del", formatearFecha(v.fechaSalida)],
-    ["Al", formatearFecha(v.fechaRegreso)],
-      ["Fecha de Regreso", formatearFecha(sumarUnDia(v.fechaRegreso))],
-];
-
-
 const altoFila = 10;
 const anchoEtiqueta = 55;
+
+
+// ── Datos generales (fecha de ingreso arriba) ──
+
+const filasDatos = [
+    ["Fecha de ingreso", formatearFecha(v.fechaIngreso)],
+    ["Nombre completo", v.nombre],
+    ["Cédula", v.cedula],
+    ["Puesto / Ocupación", v.puesto || "-"],
+];
 
 
 filasDatos.forEach((fila, i)=>{
@@ -1048,7 +1178,53 @@ filasDatos.forEach((fila, i)=>{
 });
 
 
-y += filasDatos.length*altoFila + 6;
+y += filasDatos.length*altoFila + 8;
+
+
+// ── Subtítulo: Solicita vacaciones (mismo estilo que "Datos del funcionario") ──
+
+doc.setTextColor(...azulOscuro);
+doc.setFont("helvetica","bold");
+doc.setFontSize(13);
+doc.text("Solicita vacaciones", margen, y);
+
+doc.setDrawColor(...azulOscuro);
+doc.setLineWidth(0.6);
+doc.line(margen, y+2, anchoPagina-margen, y+2);
+
+y += 12;
+
+
+const filasFechas = [
+    ["Del", formatearFecha(v.fechaSalida)],
+    ["Al", formatearFecha(v.fechaRegreso)],
+    ["Fecha de Regreso", formatearFecha(sumarUnDia(v.fechaRegreso))],
+];
+
+
+filasFechas.forEach((fila, i)=>{
+
+    const yFila = y + i*altoFila;
+
+    if(i % 2 === 0){
+
+        doc.setFillColor(...azulClaro);
+        doc.rect(margen, yFila-6, anchoPagina - margen*2, altoFila, "F");
+
+    }
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(10.5);
+    doc.setTextColor(...grisTexto);
+    doc.text(fila[0], margen+3, yFila);
+
+    doc.setFont("helvetica","normal");
+    doc.text(String(fila[1]), margen+anchoEtiqueta, yFila);
+
+});
+
+
+y += filasFechas.length*altoFila + 10;
 
 
 
@@ -1061,6 +1237,18 @@ const diasDisponibles =
 
 
 const azulDestaque = [21, 61, 107];
+
+
+doc.setTextColor(...azulOscuro);
+doc.setFont("helvetica","bold");
+doc.setFontSize(13);
+doc.text("Desglose de vacaciones", margen, y);
+
+doc.setDrawColor(...azulOscuro);
+doc.setLineWidth(0.6);
+doc.line(margen, y+2, anchoPagina-margen, y+2);
+
+y += 12;
 
 
 const columnas = [
@@ -1109,7 +1297,7 @@ doc.setFontSize(10.5);
 
 
 
-y += 80;
+y += 34;
 
 
 
@@ -1125,6 +1313,9 @@ doc.line(margen, y, margen+70, y);
 doc.line(anchoPagina-margen-70, y, anchoPagina-margen, y);
 
 
+// Etiqueta debajo de la línea
+
+doc.setFont("helvetica","normal");
 doc.setFontSize(9.5);
 doc.setTextColor(...grisTexto);
 
@@ -1139,6 +1330,27 @@ doc.text(
     "Presidente Junta Directiva",
     anchoPagina-margen-35,
     y+6,
+    { align:"center" }
+);
+
+
+// Nombre correspondiente debajo de la etiqueta
+
+doc.setFont("helvetica","bold");
+doc.setFontSize(10);
+doc.setTextColor(...grisTexto);
+
+doc.text(
+    v.nombre,
+    margen+35,
+    y+13,
+    { align:"center" }
+);
+
+doc.text(
+    nombrePresidente,
+    anchoPagina-margen-35,
+    y+13,
     { align:"center" }
 );
 
@@ -1170,7 +1382,7 @@ doc.text(
 //--------------------------------
 
 doc.save(
-    "Boleta_Vacaciones_"+v.nombre+".pdf"
+    correlativo + "_Boleta_Vacaciones_"+v.nombre+".pdf"
 );
 
 

@@ -204,6 +204,15 @@ h1,h2,h3,h4,h5,.brand-font{
     --bs-btn-hover-border-color:var(--ink-2);
 }
 
+.btn-warning{
+    --bs-btn-bg:var(--amber);
+    --bs-btn-border-color:var(--amber);
+    --bs-btn-color:#3A2A0A;
+    --bs-btn-hover-bg:var(--amber-dark);
+    --bs-btn-hover-border-color:var(--amber-dark);
+    --bs-btn-hover-color:#3A2A0A;
+}
+
 .btn-danger{
     --bs-btn-bg:var(--danger);
     --bs-btn-border-color:var(--danger);
@@ -475,6 +484,8 @@ placeholder="Nombre o cédula">
 
 <th>Cédula</th>
 
+<th>Puesto</th>
+
 <th>Saldo Vacaciones</th>
 
 <th>Acciones</th>
@@ -535,6 +546,20 @@ data-bs-dismiss="modal">
 <div class="info-chip">
 <label>Cédula</label>
 <p id="dCedula" class="mono"></p>
+</div>
+</div>
+
+<div class="col-md-6">
+<div class="info-chip">
+<label>Puesto / Ocupación</label>
+<p id="dPuesto"></p>
+</div>
+</div>
+
+<div class="col-md-6">
+<div class="info-chip">
+<label>Correo electrónico</label>
+<p id="dCorreo" class="mono"></p>
 </div>
 </div>
 
@@ -609,6 +634,23 @@ Sin vacaciones registradas
 </table>
 
 </div>
+
+</div>
+
+<div class="modal-footer">
+
+<button
+type="button"
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+Cerrar
+</button>
+
+<a id="dBtnEditar"
+href="#"
+class="btn btn-warning">
+<i class="bi bi-pencil-square me-1"></i>Editar
+</a>
 
 </div>
 

@@ -309,75 +309,63 @@ function calcularDias(){
 
 async function verDetalle(){
 
-
     if(!personaSeleccionada){
-
-
         Swal.fire(
             "Seleccione una persona",
             "Debe elegir una persona primero",
             "warning"
         );
-
-
         return;
-
     }
-
-
-
 
     document.getElementById("detallePersona")
     .innerHTML = `
-
 
     <p>
         <b>Nombre:</b>
         ${personaSeleccionada.nombre}
     </p>
 
-
     <p>
         <b>Cédula:</b>
         ${personaSeleccionada.cedula}
     </p>
 
+    <p>
+        <b>Puesto:</b>
+        ${personaSeleccionada.puesto || "-"}
+    </p>
+
+    <p>
+        <b>Correo:</b>
+        ${personaSeleccionada.correo || "-"}
+    </p>
 
     <p>
         <b>Teléfono:</b>
         ${personaSeleccionada.telefono}
     </p>
 
-
     <p>
         <b>Dirección:</b>
         ${personaSeleccionada.direccion}
     </p>
-
 
     <p>
         <b>Fecha ingreso:</b>
         ${personaSeleccionada.fechaIngreso}
     </p>
 
-
     <p>
         <b>Vacaciones disponibles:</b>
         ${personaSeleccionada.saldoVacaciones} días
     </p>
 
-
     `;
-
-
 
     await cargarHistorial();
 
-
-
     modal.show();
-
-
 }
 
 

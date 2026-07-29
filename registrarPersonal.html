@@ -344,12 +344,12 @@ data-bs-toggle="dropdown">
 <span class="notch notch-right"></span>
 
 <span class="icon-wrap">
-<i class="bi bi-person-plus-fill"></i>
+<i class="bi bi-person-plus-fill" id="headerIcon"></i>
 </span>
 
 <div>
-<h4>Registrar Personal</h4>
-<p>Agrega un nuevo colaborador al sistema</p>
+<h4 id="headerTitulo">Registrar Personal</h4>
+<p id="headerDescripcion">Agrega un nuevo colaborador al sistema</p>
 </div>
 
 </div>
@@ -377,6 +377,30 @@ type="text"
 id="cedula"
 class="form-control mono"
 placeholder="Ej. 1-1234-5678"
+required>
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+<label class="form-label">Puesto / Ocupación</label>
+<input
+type="text"
+id="puesto"
+class="form-control"
+placeholder="Ej. Asistente Administrativo"
+required>
+</div>
+
+<div class="col-md-6 mb-3">
+<label class="form-label">Correo electrónico</label>
+<input
+type="email"
+id="correo"
+class="form-control"
+placeholder="Ej. maria.fernandez@empresa.com"
 required>
 </div>
 
@@ -426,8 +450,8 @@ min="0"
 required>
 </div>
 
-<button class="btn btn-success btn-lg w-100">
-<i class="bi bi-check2-circle me-2"></i>Guardar Personal
+<button class="btn btn-success btn-lg w-100" id="btnGuardar">
+<i class="bi bi-check2-circle me-2" id="btnGuardarIcono"></i><span id="btnGuardarTexto">Guardar Personal</span>
 </button>
 
 </form>
