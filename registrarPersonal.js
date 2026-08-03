@@ -77,6 +77,85 @@ if(modoEdicion){
 }
 
 //──────────────────────────────
+// ACUMULAR VACACIONES SEGÚN FECHA DE INGRESO
+//──────────────────────────────
+// Por cada mes cumplido desde la fecha de ingreso se suma 1 día
+// de vacaciones. Ejemplo: si la persona ingresó el 15 de junio
+// de 2018, cada vez que llega el día 15 de un nuevo mes (y aún
+// no se le ha sumado el día ese mes) se incrementa el saldo en 1.
+//
+// Se apoya en los campos "ultimoMesActualizado" y
+// "ultimoAnioActualizado" que ya se guardan al crear a la persona,
+// para asegurar que el día solo se sume una vez por mes.
+//──────────────────────────────
+
+async function actualizarVacacionesAcumuladas(){
+
+    const snap = await window.db
+        .ref("personal")
+        .once("value");
+
+    if(!snap.exists())
+        return;
+
+    const datos = snap.val();
+
+    const hoy = new Date();
+
+    for(const id in datos){
+
+        const persona = datos[id];
+
+        if(!persona.fechaIngreso)
+            continue;
+
+        const ingreso = new Date(persona.fechaIngreso);
+
+        // Día del mes en que ingresó (ej: 15)
+        const diaAniversario = ingreso.getDate();
+
+        // Aún no llega el día del mes en que toca sumar
+        if(hoy.getDate() < diaAniversario)
+            continue;
+
+        // Evitar sumar en el mismo mes en que fue registrada
+        // (por ejemplo, si ingresó este mes, no se le suma de una vez)
+        const mismoMesQueIngreso =
+            hoy.getFullYear() === ingreso.getFullYear() &&
+            hoy.getMonth() === ingreso.getMonth();
+
+        if(mismoMesQueIngreso)
+            continue;
+
+        // Ya se actualizó este mismo mes/año, no volver a sumar
+        const yaActualizado =
+            persona.ultimoMesActualizado === hoy.getMonth() &&
+            persona.ultimoAnioActualizado === hoy.getFullYear();
+
+        if(yaActualizado)
+            continue;
+
+        const nuevoSaldo =
+            Number(persona.saldoVacaciones || 0) + 1;
+
+        await window.db
+            .ref("personal/" + id)
+            .update({
+
+                saldoVacaciones: nuevoSaldo,
+                ultimoMesActualizado: hoy.getMonth(),
+                ultimoAnioActualizado: hoy.getFullYear()
+
+            });
+
+    }
+
+}
+
+// Se ejecuta cada vez que se carga esta página
+actualizarVacacionesAcumuladas();
+
+//──────────────────────────────
 // VALIDAR CÉDULA DUPLICADA
 //──────────────────────────────
 

@@ -196,6 +196,50 @@ function seleccionarPersona(id){
 
 
 //-------------------------------------
+// CONTAR DIAS HABILES (sin sábados ni domingos)
+//-------------------------------------
+
+function contarDiasHabiles(fechaInicio, fechaFin){
+
+
+    let contador = 0;
+
+
+    const actual = new Date(fechaInicio);
+
+
+
+    while(actual <= fechaFin){
+
+
+        const diaSemana = actual.getDay();
+
+        // 0 = domingo, 6 = sábado
+
+        if(diaSemana !== 0 && diaSemana !== 6){
+
+            contador++;
+
+        }
+
+
+
+        actual.setDate(actual.getDate()+1);
+
+
+    }
+
+
+
+    return contador;
+
+
+}
+
+
+
+
+//-------------------------------------
 // CALCULAR DIAS
 //-------------------------------------
 
@@ -246,15 +290,13 @@ function calcularDias(){
 
 
 
-    const dias = Math.floor(
+    const dias = contarDiasHabiles(
 
-        (fechaRegreso-fechaSalida)
+        fechaSalida,
 
-        /
+        fechaRegreso
 
-        (1000*60*60*24)
-
-    ) + 1;
+    );
 
 
 
