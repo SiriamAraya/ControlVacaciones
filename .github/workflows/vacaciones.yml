@@ -2,8 +2,8 @@ name: Acumular vacaciones mensuales
 
 on:
   schedule:
-    - cron: "0 12 * * *"   # todos los días a las 12:00 UTC (6:00 am hora CR)
-  workflow_dispatch:        # permite correrlo manualmente desde GitHub también
+    - cron: "0 12 * * *"
+  workflow_dispatch:
 
 jobs:
   actualizar:
@@ -23,7 +23,7 @@ jobs:
         working-directory: scripts
 
       - name: Debug secreto
-        run: echo "Largo del secreto: ${#FIREBASE_SERVICE_ACCOUNT_BASE64}"
+        run: echo Largo del secreto = ${#FIREBASE_SERVICE_ACCOUNT_BASE64}
         env:
           FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
 
