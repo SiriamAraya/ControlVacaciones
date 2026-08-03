@@ -1,0 +1,30 @@
+name: Acumular vacaciones mensuales
+
+on:
+  schedule:
+    - cron: "0 12 * * *"   # todos los días a las 12:00 UTC (6:00 am hora CR)
+  workflow_dispatch:        # permite correrlo manualmente desde GitHub también
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar dependencias
+        run: npm install
+        working-directory: scripts
+
+      - name: Ejecutar script de acumulación
+        run: node actualizarVacaciones.js
+        working-directory: scripts
+        env:
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}

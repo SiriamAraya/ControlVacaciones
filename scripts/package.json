@@ -1,0 +1,9 @@
+{
+  "name": "control-vacaciones-cron",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Script para acumular vacaciones automáticamente",
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
