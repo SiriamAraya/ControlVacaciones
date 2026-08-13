@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Listado de Vacaciones</title>
+<title>Calendario de Vacaciones</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -14,10 +14,11 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales-all.global.min.js"></script>
 
 <style>
 
@@ -192,20 +193,6 @@ h1,h2,h3,h4,h5,.brand-font{
     padding:.65rem 1.1rem;
 }
 
-.btn-success{
-    --bs-btn-bg:var(--success);
-    --bs-btn-border-color:var(--success);
-    --bs-btn-hover-bg:#26875C;
-    --bs-btn-hover-border-color:#26875C;
-}
-
-.btn-primary{
-    --bs-btn-bg:var(--ink);
-    --bs-btn-border-color:var(--ink);
-    --bs-btn-hover-bg:var(--ink-2);
-    --bs-btn-hover-border-color:var(--ink-2);
-}
-
 .btn-danger{
     --bs-btn-bg:var(--danger);
     --bs-btn-border-color:var(--danger);
@@ -213,55 +200,254 @@ h1,h2,h3,h4,h5,.brand-font{
     --bs-btn-hover-border-color:#BE3E39;
 }
 
-.btn-sm{
-    border-radius:10px;
-    padding:.35rem .7rem;
-    font-size:.8rem;
-}
+/* LEYENDA DE PERSONAS */
 
-/* TABLE */
-
-.table-responsive{
-    border-radius:14px;
-    overflow:hidden;
+.leyenda{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem .9rem;
+    align-items:center;
+    background:#fff;
     border:1px solid var(--border);
+    border-radius:14px;
+    padding:.75rem 1rem;
+    margin-bottom:1.5rem;
 }
 
-.table{
-    margin-bottom:0;
-}
-
-.table thead th{
-    background:linear-gradient(120deg,var(--ink),var(--ink-2));
-    color:#fff;
-    font-size:.74rem;
-    text-transform:uppercase;
-    letter-spacing:.06em;
+.leyenda-item{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    font-size:.78rem;
     font-weight:600;
-    border:none;
-    padding:.9rem 1rem;
-    white-space:nowrap;
+    color:var(--ink);
 }
 
-.table tbody td{
-    padding:.8rem 1rem;
-    vertical-align:middle;
-    border-color:var(--border);
-    font-size:.92rem;
-}
-
-.table-hover tbody tr:hover{
-    background:rgba(226,166,60,.08);
-}
-
-.badge-dias{
+.leyenda-punto{
+    width:10px;
+    height:10px;
+    border-radius:50%;
     display:inline-block;
-    font-family:'JetBrains Mono',monospace;
+    flex:none;
+}
+
+.leyenda-vacio{
+    font-size:.85rem;
+    color:var(--muted);
+}
+
+/* CALENDARIO */
+
+.calendario-wrapper{
+    position:relative;
+    min-height:520px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:1rem;
+}
+
+.loading-shade{
+    position:absolute;
+    inset:0;
+    background:rgba(255,255,255,.85);
+    z-index:5;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:.75rem;
+    color:var(--muted);
+    font-size:.9rem;
+    border-radius:14px;
+}
+
+.fc{
+    font-family:'Inter',sans-serif;
+}
+
+.fc .fc-toolbar-title{
+    font-family:'Fraunces',serif;
+    font-size:1.3rem;
+    font-weight:600;
+    color:var(--ink);
+    text-transform:capitalize;
+}
+
+.fc .fc-button{
+    background-color:#fff;
+    border-color:var(--border);
+    color:var(--ink);
+    text-transform:capitalize;
+    box-shadow:none!important;
+    border-radius:10px!important;
+    padding:.4rem .9rem;
+}
+
+.fc .fc-button:hover{
+    background-color:rgba(226,166,60,.12);
+    border-color:var(--amber);
+    color:var(--amber-dark);
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active{
+    background-color:var(--ink);
+    border-color:var(--ink);
+    color:#fff;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th{
+    border-color:var(--border);
+}
+
+.fc-theme-standard .fc-scrollgrid{
+    border-color:var(--border);
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.fc .fc-col-header-cell{
+    background:#FAF7F0;
+    padding:.6rem 0;
+}
+
+.fc .fc-col-header-cell-cushion{
+    font-size:.72rem;
     font-weight:700;
-    padding:.3rem .7rem;
-    border-radius:999px;
-    background:rgba(46,158,108,.12);
-    color:var(--success);
+    color:var(--amber-dark);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    text-decoration:none;
+}
+
+.fc .fc-daygrid-day-frame{
+    padding:5px;
+    min-height:112px;
+}
+
+.fc .fc-daygrid-day-number{
+    font-size:.82rem;
+    font-weight:500;
+    color:#444;
+    padding:2px 6px;
+    border-radius:6px;
+    text-decoration:none;
+}
+
+.fc .fc-day-today{
+    background-color:rgba(226,166,60,.10)!important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number{
+    background-color:var(--ink);
+    color:#fff;
+    font-weight:600;
+}
+
+.fc .fc-day-other .fc-daygrid-day-number{
+    color:#bbb;
+}
+
+/* Fila "todo el día" en la vista de semana: sin etiqueta y más angosta */
+
+.fc .fc-timegrid-axis{
+    width:0;
+}
+
+.fc .fc-timegrid-all-day-lane .fc-daygrid-day-frame{
+    min-height:auto;
+    padding:4px 2px;
+}
+
+.fc .fc-timegrid-all-day-lane .fc-daygrid-event{
+    margin:1px 3px;
+}
+
+/* Eventos como "píldora" rellena con el color de la persona.
+   IMPORTANTE: no usar display:flex/flex-direction aquí ni forzar margin:0
+   en los harnesses -- FullCalendar necesita su propio posicionamiento
+   (top/margin calculado por él) para apilar correctamente los eventos
+   que se traslapan en un mismo día, uno debajo del otro. */
+
+.fc .fc-daygrid-day-events{
+    margin-top:3px;
+    padding:0 1px;
+}
+
+.fc-daygrid-event-harness{
+    margin-bottom:3px!important;
+}
+
+.fc .fc-daygrid-event,
+.fc .fc-timegrid-event{
+    cursor:pointer;
+    border-radius:7px;
+    padding:3px 7px;
+    font-size:.72rem;
+    font-weight:600;
+    line-height:1.25;
+    border:none!important;
+    color:#fff!important;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.14), 0 1px 2px rgba(0,0,0,.1);
+    text-shadow:0 1px 1px rgba(0,0,0,.15);
+    transition:transform .12s ease, box-shadow .12s ease;
+}
+
+.fc .fc-daygrid-event:hover{
+    transform:translateY(-1px);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.14), 0 3px 8px rgba(0,0,0,.18);
+    z-index:4;
+}
+
+.fc .fc-daygrid-more-link{
+    font-size:.7rem;
+    font-weight:700;
+    color:var(--amber-dark);
+}
+
+.fc .fc-more-popover{
+    border-radius:10px;
+    border:1px solid var(--border);
+    box-shadow:0 4px 16px rgba(0,0,0,.12);
+}
+
+.fc .fc-popover-header{
+    background:#FAF7F0;
+    padding:.5rem .75rem;
+    font-weight:600;
+    color:var(--ink);
+}
+
+/* SWEETALERT: detalle de persona */
+
+.detalle-persona{
+    text-align:left;
+    font-size:.9rem;
+}
+
+.detalle-persona .fila{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    padding:.4rem 0;
+    border-bottom:1px dashed var(--border);
+}
+
+.detalle-persona .fila:last-child{
+    border-bottom:none;
+}
+
+.detalle-persona .etiqueta{
+    color:var(--muted);
+    font-weight:600;
+}
+
+.detalle-persona .valor{
+    font-weight:600;
+    color:var(--ink);
+    text-align:right;
 }
 
 /* RESPONSIVE */
@@ -280,26 +466,18 @@ h1,h2,h3,h4,h5,.brand-font{
         padding:1.25rem;
     }
 
-    .table thead th,
-    .table tbody td{
-        padding:.6rem .55rem;
-        font-size:.82rem;
-    }
-
-    .btn{
-        font-size:.9rem;
-        padding:.6rem .9rem;
+    .fc .fc-toolbar{
+        flex-direction:column;
+        gap:.6rem;
     }
 }
 
 </style>
 
-
 </head>
 
 
 <body>
-
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-ticket shadow-sm sticky-top">
 
@@ -421,14 +599,14 @@ data-bs-toggle="dropdown">
 <span class="notch notch-right"></span>
 
 <span class="icon-wrap">
-<i class="bi bi-airplane-fill"></i>
+<i class="bi bi-calendar3-range"></i>
 </span>
 
 <div>
 <h4>
-Listado de Vacaciones
+Calendario de Vacaciones
 </h4>
-<p>Consulta, filtra y descarga las boletas de cada colaborador</p>
+<p>Visualiza quién está de vacaciones cada día, por mes o por semana</p>
 </div>
 
 </div>
@@ -437,143 +615,20 @@ Listado de Vacaciones
 
 <div class="card-body">
 
-
-<div class="row g-3 mb-4 align-items-end">
-
-
-<div class="col-12 col-md-4">
-
-<label class="form-label">
-Buscar persona
-</label>
-
-<div class="input-group">
-<span class="input-group-text bg-white border-end-0" style="border-radius:12px 0 0 12px;border-color:var(--border);">
-<i class="bi bi-search text-muted"></i>
-</span>
-<input
-type="text"
-id="buscar"
-class="form-control border-start-0 ps-0"
-style="border-radius:0 12px 12px 0;"
-placeholder="Nombre o cédula">
+<div id="leyendaPersonas" class="leyenda">
+<span class="leyenda-vacio">Cargando personal en vacaciones...</span>
 </div>
 
+<div class="calendario-wrapper">
+
+<div id="loadingShade" class="loading-shade">
+<div class="spinner-border text-dark" role="status"></div>
+<span>Cargando vacaciones...</span>
 </div>
 
-
-
-<div class="col-6 col-md-3">
-
-<label class="form-label">
-Desde
-</label>
-
-<input
-type="date"
-id="fechaDesde"
-class="form-control"
-onkeydown="return false;">
+<div id="calendario"></div>
 
 </div>
-
-
-
-<div class="col-6 col-md-3">
-
-<label class="form-label">
-Hasta
-</label>
-
-<input
-type="date"
-id="fechaHasta"
-class="form-control"
-onkeydown="return false;">
-
-</div>
-
-
-
-<div class="col-12 col-md-2">
-
-<button
-class="btn btn-danger w-100"
-onclick="generarPDF()">
-
-<i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF
-
-</button>
-
-</div>
-
-
-</div>
-
-
-
-
-<div class="table-responsive">
-
-
-<table class="table table-hover align-middle mb-0">
-
-
-<thead>
-
-<tr>
-
-<th>
-Nombre
-</th>
-
-<th>
-Cédula
-</th>
-
-<th>
-Del
-</th>
-
-<th>
-Al
-</th>
-
-<th>
-Días tomados
-</th>
-
-<th>
-Días restantes
-</th>
-
-<th>
-Registrado
-</th>
-
-<th>
-Acciones
-</th>
-
-
-</tr>
-
-</thead>
-
-
-
-<tbody id="listaVacaciones">
-
-
-</tbody>
-
-
-</table>
-
-
-</div>
-
-
 
 </div>
 
@@ -582,29 +637,16 @@ Acciones
 
 
 </div>
-
-
 
 
 
 <script src="config.js"></script>
 
-
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-
-
-
-<script src="vacaciones.js"></script>
-
+<script src="calendarioVacaciones.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
 
 </body>
 

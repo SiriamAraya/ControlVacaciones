@@ -22,40 +22,6 @@ window.onload = function () {
 };
 
 //----------------------------------------
-// ACTUALIZAR SALDO SI CAMBIÓ EL MES
-//----------------------------------------
-
-async function actualizarSaldo(persona, key) {
-
-    const hoy = new Date();
-
-    const mesActual = hoy.getMonth();
-    const anioActual = hoy.getFullYear();
-
-    if (
-        persona.ultimoMesActualizado != mesActual ||
-        persona.ultimoAnioActualizado != anioActual
-    ) {
-
-        persona.saldoVacaciones =
-            parseInt(persona.saldoVacaciones || 0) + 1;
-
-        persona.ultimoMesActualizado = mesActual;
-        persona.ultimoAnioActualizado = anioActual;
-
-        await window.db
-            .ref("personal/" + key)
-            .update({
-                saldoVacaciones: persona.saldoVacaciones,
-                ultimoMesActualizado: mesActual,
-                ultimoAnioActualizado: anioActual
-            });
-
-    }
-
-}
-
-//----------------------------------------
 // CARGAR PERSONAL
 //----------------------------------------
 
@@ -99,10 +65,7 @@ async function cargarPersonal() {
 
         const p = datos[key];
 
-        await actualizarSaldo(p, key);
-
         personal.push({
-
             id: key,
 
             nombre: p.nombre,

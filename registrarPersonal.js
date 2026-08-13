@@ -290,10 +290,6 @@ document.getElementById("formPersonal")
 
             saldoVacaciones,
 
-            ultimoMesActualizado:hoy.getMonth(),
-
-            ultimoAnioActualizado:hoy.getFullYear(),
-
             fechaRegistro:hoy.toISOString()
 
         };

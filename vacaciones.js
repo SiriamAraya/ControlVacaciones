@@ -6,25 +6,25 @@ let vacacionesFiltradas = [];
 // INICIO
 //--------------------------------
 
-window.onload = function(){
+window.onload = function () {
 
 
-    cargarVacaciones();
-
-
-    document
-    .getElementById("buscar")
-    .addEventListener("keyup",filtrar);
+    cargarVacaciones().then(precargarBusquedaDesdeURL);
 
 
     document
-    .getElementById("fechaDesde")
-    .addEventListener("change",filtrar);
+        .getElementById("buscar")
+        .addEventListener("keyup", filtrar);
 
 
     document
-    .getElementById("fechaHasta")
-    .addEventListener("change",filtrar);
+        .getElementById("fechaDesde")
+        .addEventListener("change", filtrar);
+
+
+    document
+        .getElementById("fechaHasta")
+        .addEventListener("change", filtrar);
 
 
 };
@@ -37,14 +37,14 @@ window.onload = function(){
 // CARGAR DATOS
 //--------------------------------
 
-async function cargarVacaciones(){
+async function cargarVacaciones() {
 
 
     const tbody =
-    document.getElementById("listaVacaciones");
+        document.getElementById("listaVacaciones");
 
 
-    tbody.innerHTML=`
+    tbody.innerHTML = `
 
     <tr>
         <td colspan="8" class="text-center">
@@ -57,19 +57,19 @@ async function cargarVacaciones(){
 
 
     const snap =
-    await window.db
-    .ref("vacaciones")
-    .once("value");
+        await window.db
+            .ref("vacaciones")
+            .once("value");
 
 
 
-    vacaciones=[];
+    vacaciones = [];
 
 
 
-    if(!snap.exists()){
+    if (!snap.exists()) {
 
-        vacacionesFiltradas=[];
+        vacacionesFiltradas = [];
 
         mostrarTabla();
 
@@ -80,58 +80,58 @@ async function cargarVacaciones(){
 
 
 
-    const datos=snap.val();
+    const datos = snap.val();
 
 
 
 
-    for(const id in datos){
+    for (const id in datos) {
 
 
-        const v=datos[id];
+        const v = datos[id];
 
 
 
         const personaSnap =
-        await window.db
-        .ref("personal/"+v.idPersona)
-        .once("value");
+            await window.db
+                .ref("personal/" + v.idPersona)
+                .once("value");
 
 
 
         const persona =
-        personaSnap.val();
+            personaSnap.val();
 
 
 
-        if(persona){
+        if (persona) {
 
 
             vacaciones.push({
 
-                id:id,
+                id: id,
 
-                idPersona:v.idPersona,
+                idPersona: v.idPersona,
 
-                nombre:persona.nombre,
+                nombre: persona.nombre,
 
-                cedula:persona.cedula,
+                cedula: persona.cedula,
 
-                puesto:persona.puesto || "",
+                puesto: persona.puesto || "",
 
-                fechaIngreso:persona.fechaIngreso || "",
+                fechaIngreso: persona.fechaIngreso || "",
 
-                fechaSalida:v.fechaSalida,
+                fechaSalida: v.fechaSalida,
 
-                fechaRegreso:v.fechaRegreso,
+                fechaRegreso: v.fechaRegreso,
 
-                diasTomados:v.diasTomados,
+                diasTomados: v.diasTomados,
 
-                diasRestantes:persona.saldoVacaciones,
+                diasRestantes: persona.saldoVacaciones,
 
-                fechaRegistro:v.fechaRegistro,
+                fechaRegistro: v.fechaRegistro,
 
-                correlativo:v.correlativo || null
+                correlativo: v.correlativo || null
 
             });
 
@@ -146,18 +146,18 @@ async function cargarVacaciones(){
 
     // NUEVAS ARRIBA
 
-    vacaciones.sort((a,b)=>{
+    vacaciones.sort((a, b) => {
 
         return new Date(b.fechaRegistro)
-        -
-        new Date(a.fechaRegistro);
+            -
+            new Date(a.fechaRegistro);
 
     });
 
 
 
 
-    vacacionesFiltradas=[...vacaciones];
+    vacacionesFiltradas = [...vacaciones];
 
 
     mostrarTabla();
@@ -176,21 +176,21 @@ async function cargarVacaciones(){
 // MOSTRAR TABLA
 //--------------------------------
 
-function mostrarTabla(){
+function mostrarTabla() {
 
 
-const tbody =
-document.getElementById("listaVacaciones");
+    const tbody =
+        document.getElementById("listaVacaciones");
 
 
-tbody.innerHTML="";
+    tbody.innerHTML = "";
 
 
 
-if(vacacionesFiltradas.length===0){
+    if (vacacionesFiltradas.length === 0) {
 
 
-tbody.innerHTML=`
+        tbody.innerHTML = `
 
 <tr>
 
@@ -204,17 +204,17 @@ No hay vacaciones registradas
 
 `;
 
-return;
+        return;
 
-}
-
-
+    }
 
 
-vacacionesFiltradas.forEach(v=>{
 
 
-tbody.innerHTML += `
+    vacacionesFiltradas.forEach(v => {
+
+
+        tbody.innerHTML += `
 
 
 <tr>
@@ -256,11 +256,11 @@ ${v.diasRestantes}
 <td>
 
 ${formatearFecha(
-v.fechaRegistro ?
-v.fechaRegistro.split("T")[0]
-:
-""
-)}
+            v.fechaRegistro ?
+                v.fechaRegistro.split("T")[0]
+                :
+                ""
+        )}
 
 </td>
 
@@ -304,7 +304,7 @@ Eliminar
 `;
 
 
-});
+    });
 
 
 }
@@ -320,95 +320,95 @@ Eliminar
 // FILTROS
 //--------------------------------
 
-function filtrar(){
+function filtrar() {
 
 
-let texto =
-document
-.getElementById("buscar")
-.value
-.toLowerCase()
-.trim();
-
-
-
-let desde =
-document.getElementById("fechaDesde")
-.value;
+    let texto =
+        document
+            .getElementById("buscar")
+            .value
+            .toLowerCase()
+            .trim();
 
 
 
-let hasta =
-document.getElementById("fechaHasta")
-.value;
+    let desde =
+        document.getElementById("fechaDesde")
+            .value;
 
 
 
-
-vacacionesFiltradas = vacaciones.filter(v=>{
-
-
-let cumpleTexto=true;
-
-let cumpleFecha=true;
+    let hasta =
+        document.getElementById("fechaHasta")
+            .value;
 
 
 
 
-if(texto){
+    vacacionesFiltradas = vacaciones.filter(v => {
 
 
-cumpleTexto =
+        let cumpleTexto = true;
 
-v.nombre.toLowerCase()
-.includes(texto)
-
-||
-
-v.cedula.includes(texto);
-
-
-}
+        let cumpleFecha = true;
 
 
 
 
-
-if(desde){
-
-
-cumpleFecha =
-v.fechaSalida >= desde;
+        if (texto) {
 
 
-}
+            cumpleTexto =
+
+                v.nombre.toLowerCase()
+                    .includes(texto)
+
+                ||
+
+                v.cedula.includes(texto);
+
+
+        }
 
 
 
 
 
-if(hasta){
+        if (desde) {
 
 
-cumpleFecha =
-cumpleFecha &&
-v.fechaSalida <= hasta;
+            cumpleFecha =
+                v.fechaSalida >= desde;
 
 
-}
-
-
+        }
 
 
 
-return cumpleTexto && cumpleFecha;
 
 
-});
+        if (hasta) {
+
+
+            cumpleFecha =
+                cumpleFecha &&
+                v.fechaSalida <= hasta;
+
+
+        }
 
 
 
-mostrarTabla();
+
+
+        return cumpleTexto && cumpleFecha;
+
+
+    });
+
+
+
+    mostrarTabla();
 
 
 }
@@ -424,164 +424,164 @@ mostrarTabla();
 // ELIMINAR
 //--------------------------------
 
-async function eliminarVacacion(id,idPersona,dias){
+async function eliminarVacacion(id, idPersona, dias) {
 
 
 
-const confirmar = await Swal.fire({
+    const confirmar = await Swal.fire({
 
 
-title:"¿Eliminar vacaciones?",
+        title: "¿Eliminar vacaciones?",
 
-text:"Los días serán devueltos al saldo disponible",
+        text: "Los días serán devueltos al saldo disponible",
 
-icon:"warning",
+        icon: "warning",
 
-showCancelButton:true,
+        showCancelButton: true,
 
-confirmButtonText:"Sí, eliminar",
+        confirmButtonText: "Sí, eliminar",
 
-cancelButtonText:"Cancelar"
+        cancelButtonText: "Cancelar"
 
 
-});
+    });
 
 
 
 
-if(!confirmar.isConfirmed)
-return;
+    if (!confirmar.isConfirmed)
+        return;
 
 
 
 
 
-try{
+    try {
 
 
-// buscar persona
+        // buscar persona
 
-const personaSnap =
-await window.db
-.ref("personal/"+idPersona)
-.once("value");
+        const personaSnap =
+            await window.db
+                .ref("personal/" + idPersona)
+                .once("value");
 
 
 
-const persona =
-personaSnap.val();
+        const persona =
+            personaSnap.val();
 
 
 
 
-if(!persona){
+        if (!persona) {
 
 
-Swal.fire(
-"Error",
-"No existe la persona",
-"error"
-);
+            Swal.fire(
+                "Error",
+                "No existe la persona",
+                "error"
+            );
 
 
-return;
+            return;
 
-}
+        }
 
 
 
 
-let saldoActual =
-parseInt(persona.saldoVacaciones || 0);
+        let saldoActual =
+            parseInt(persona.saldoVacaciones || 0);
 
 
 
-let nuevoSaldo =
-saldoActual + parseInt(dias);
+        let nuevoSaldo =
+            saldoActual + parseInt(dias);
 
 
 
 
 
 
-// devolver días
+        // devolver días
 
-await window.db
-.ref("personal/"+idPersona)
-.update({
+        await window.db
+            .ref("personal/" + idPersona)
+            .update({
 
-saldoVacaciones:nuevoSaldo
+                saldoVacaciones: nuevoSaldo
 
-});
+            });
 
 
 
 
 
 
-// eliminar registro
+        // eliminar registro
 
-await window.db
-.ref("vacaciones/"+id)
-.remove();
+        await window.db
+            .ref("vacaciones/" + id)
+            .remove();
 
 
 
 
 
 
-Swal.fire({
+        Swal.fire({
 
-icon:"success",
+            icon: "success",
 
-title:"Eliminado",
+            title: "Eliminado",
 
-text:"Los días fueron devueltos correctamente"
+            text: "Los días fueron devueltos correctamente"
 
-});
+        });
 
 
 
 
 
 
-// quitarlo del arreglo sin recargar
+        // quitarlo del arreglo sin recargar
 
-vacaciones =
-vacaciones.filter(v=>v.id!==id);
+        vacaciones =
+            vacaciones.filter(v => v.id !== id);
 
 
 
-vacacionesFiltradas =
-vacacionesFiltradas.filter(v=>v.id!==id);
+        vacacionesFiltradas =
+            vacacionesFiltradas.filter(v => v.id !== id);
 
 
 
-mostrarTabla();
+        mostrarTabla();
 
 
 
 
 
-}
-catch(error){
+    }
+    catch (error) {
 
 
-console.error(error);
+        console.error(error);
 
 
-Swal.fire(
+        Swal.fire(
 
-"Error",
+            "Error",
 
-"No se pudo eliminar la vacación",
+            "No se pudo eliminar la vacación",
 
-"error"
+            "error"
 
-);
+        );
 
 
-}
+    }
 
 
 
@@ -599,25 +599,25 @@ Swal.fire(
 // FORMATO FECHA
 //--------------------------------
 
-function formatearFecha(fecha){
+function formatearFecha(fecha) {
 
 
-if(!fecha)
-return "";
-
-
-
-let partes =
-fecha.split("-");
+    if (!fecha)
+        return "";
 
 
 
-if(partes.length!==3)
-return fecha;
+    let partes =
+        fecha.split("-");
 
 
 
-return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    if (partes.length !== 3)
+        return fecha;
+
+
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
 
 
 }
@@ -633,42 +633,42 @@ return `${partes[2]}/${partes[1]}/${partes[0]}`;
 // SUMAR UN DÍA A UNA FECHA
 //--------------------------------
 
-function sumarUnDia(fecha){
+function sumarUnDia(fecha) {
 
 
-if(!fecha)
-return "";
-
-
-
-let partes =
-fecha.split("-");
+    if (!fecha)
+        return "";
 
 
 
-if(partes.length!==3)
-return fecha;
+    let partes =
+        fecha.split("-");
 
 
 
-let d = new Date(
-Number(partes[0]),
-Number(partes[1])-1,
-Number(partes[2])
-);
+    if (partes.length !== 3)
+        return fecha;
 
 
-d.setDate(d.getDate()+1);
+
+    let d = new Date(
+        Number(partes[0]),
+        Number(partes[1]) - 1,
+        Number(partes[2])
+    );
 
 
-let anio = d.getFullYear();
-
-let mes = String(d.getMonth()+1).padStart(2,"0");
-
-let dia = String(d.getDate()).padStart(2,"0");
+    d.setDate(d.getDate() + 1);
 
 
-return `${anio}-${mes}-${dia}`;
+    let anio = d.getFullYear();
+
+    let mes = String(d.getMonth() + 1).padStart(2, "0");
+
+    let dia = String(d.getDate()).padStart(2, "0");
+
+
+    return `${anio}-${mes}-${dia}`;
 
 
 }
@@ -685,21 +685,21 @@ return `${anio}-${mes}-${dia}`;
 // en 1 y se reinicia automáticamente al cambiar el año.
 //--------------------------------
 
-async function obtenerSiguienteConsecutivo(anio){
+async function obtenerSiguienteConsecutivo(anio) {
 
     const ref =
-    window.db.ref("consecutivos/boletas/"+anio);
+        window.db.ref("consecutivos/boletas/" + anio);
 
     const snap =
-    await ref.once("value");
+        await ref.once("value");
 
     let siguiente;
 
-    if(snap.exists()){
+    if (snap.exists()) {
 
         siguiente = parseInt(snap.val()) + 1;
 
-    }else{
+    } else {
 
         siguiente = (anio === 2026) ? 9 : 1;
 
@@ -719,9 +719,9 @@ async function obtenerSiguienteConsecutivo(anio){
 // DE UNA VACACIÓN ESPECÍFICA
 //--------------------------------
 
-async function obtenerCorrelativoBoleta(vacacion){
+async function obtenerCorrelativoBoleta(vacacion) {
 
-    if(vacacion.correlativo){
+    if (vacacion.correlativo) {
 
         return vacacion.correlativo;
 
@@ -730,14 +730,14 @@ async function obtenerCorrelativoBoleta(vacacion){
     const anio = new Date().getFullYear();
 
     const numero =
-    await obtenerSiguienteConsecutivo(anio);
+        await obtenerSiguienteConsecutivo(anio);
 
     const correlativo =
-    "BV-" + String(numero).padStart(2,"0") + "-" + anio;
+        "BV-" + String(numero).padStart(2, "0") + "-" + anio;
 
     await window.db
-    .ref("vacaciones/"+vacacion.id)
-    .update({ correlativo });
+        .ref("vacaciones/" + vacacion.id)
+        .update({ correlativo });
 
     vacacion.correlativo = correlativo;
 
@@ -752,38 +752,38 @@ async function obtenerCorrelativoBoleta(vacacion){
 // PDF LISTADO
 //--------------------------------
 
-function generarPDF(){
+function generarPDF() {
 
 
-const {jsPDF}=window.jspdf;
+    const { jsPDF } = window.jspdf;
 
 
-const doc=new jsPDF();
+    const doc = new jsPDF();
 
 
-// Coloca aquí la ruta de tu logo
-const logo = "assets/logo.jpg";
+    // Coloca aquí la ruta de tu logo
+    const logo = "assets/logo.jpg";
 
 
-const imgReady = new Image();
+    const imgReady = new Image();
 
-imgReady.crossOrigin = "anonymous";
+    imgReady.crossOrigin = "anonymous";
 
-imgReady.src = logo;
-
-
-imgReady.onload = function(){
-
-    crearContenidoListado(doc, imgReady);
-
-};
+    imgReady.src = logo;
 
 
-imgReady.onerror = function(){
+    imgReady.onload = function () {
 
-    crearContenidoListado(doc, null);
+        crearContenidoListado(doc, imgReady);
 
-};
+    };
+
+
+    imgReady.onerror = function () {
+
+        crearContenidoListado(doc, null);
+
+    };
 
 
 }
@@ -795,146 +795,146 @@ imgReady.onerror = function(){
 // CONTENIDO LISTADO
 //--------------------------------
 
-function crearContenidoListado(doc, logoImg){
+function crearContenidoListado(doc, logoImg) {
 
 
-const anchoPagina = doc.internal.pageSize.getWidth();
-const margen = 14;
+    const anchoPagina = doc.internal.pageSize.getWidth();
+    const margen = 14;
 
 
-// Encabezado con franja de color
-doc.setFillColor(21, 61, 107);
-doc.rect(0, 0, anchoPagina, 28, "F");
+    // Encabezado con franja de color
+    doc.setFillColor(21, 61, 107);
+    doc.rect(0, 0, anchoPagina, 28, "F");
 
 
-if(logoImg){
+    if (logoImg) {
 
-    try{
+        try {
 
-        doc.addImage(logoImg, "PNG", margen, 4, 18, 18);
+            doc.addImage(logoImg, "PNG", margen, 4, 18, 18);
 
-    }catch(e){}
+        } catch (e) { }
 
-}
+    }
 
 
-const xTitulo = logoImg ? margen + 24 : margen;
+    const xTitulo = logoImg ? margen + 24 : margen;
 
 
-doc.setTextColor(255,255,255);
-doc.setFont("helvetica","bold");
-doc.setFontSize(9);
-doc.text(
-"Asociación Administradora del Acueducto y Alcantarillado",
-xTitulo,
-9
-);
-doc.text(
-"Sanitario de los Ángeles de Grecia",
-xTitulo,
-13.5
-);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(
+        "Asociación Administradora del Acueducto y Alcantarillado",
+        xTitulo,
+        9
+    );
+    doc.text(
+        "Sanitario de los Ángeles de Grecia",
+        xTitulo,
+        13.5
+    );
 
 
-doc.setFontSize(14);
-doc.text(
-"Listado de Vacaciones",
-xTitulo,
-22
-);
+    doc.setFontSize(14);
+    doc.text(
+        "Listado de Vacaciones",
+        xTitulo,
+        22
+    );
 
-doc.setFont("helvetica","normal");
-doc.setFontSize(8);
-doc.text(
-"Generado: " + formatearFecha(new Date().toISOString().split("T")[0]),
-anchoPagina - margen,
-22,
-{ align:"right" }
-);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(
+        "Generado: " + formatearFecha(new Date().toISOString().split("T")[0]),
+        anchoPagina - margen,
+        22,
+        { align: "right" }
+    );
 
 
 
-let filas =
-vacacionesFiltradas.map(v=>[
+    let filas =
+        vacacionesFiltradas.map(v => [
 
 
-v.nombre,
+            v.nombre,
 
-v.cedula,
+            v.cedula,
 
-formatearFecha(v.fechaSalida),
+            formatearFecha(v.fechaSalida),
 
-formatearFecha(sumarUnDia(v.fechaRegreso)),
+            formatearFecha(sumarUnDia(v.fechaRegreso)),
 
-v.diasTomados,
+            v.diasTomados,
 
-v.diasRestantes
+            v.diasRestantes
 
 
-]);
+        ]);
 
 
 
-doc.autoTable({
+    doc.autoTable({
 
 
-startY:36,
+        startY: 36,
 
 
-head:[[
+        head: [[
 
-"Nombre",
+            "Nombre",
 
-"Cédula",
+            "Cédula",
 
-"Del",
+            "Del",
 
-"Al",
+            "Al",
 
-"Días tomados",
+            "Días tomados",
 
-"Días restantes"
+            "Días restantes"
 
-]],
+        ]],
 
 
-headStyles:{
+        headStyles: {
 
-fillColor:[21, 61, 107],
+            fillColor: [21, 61, 107],
 
-textColor:[255,255,255],
+            textColor: [255, 255, 255],
 
-fontStyle:"bold"
+            fontStyle: "bold"
 
-},
+        },
 
 
-alternateRowStyles:{
+        alternateRowStyles: {
 
-fillColor:[235, 242, 250]
+            fillColor: [235, 242, 250]
 
-},
+        },
 
 
-styles:{
+        styles: {
 
-fontSize:9,
+            fontSize: 9,
 
-cellPadding:3
+            cellPadding: 3
 
-},
+        },
 
 
-body:filas
+        body: filas
 
 
-});
+    });
 
 
 
-doc.save(
-"Listado_Vacaciones.pdf"
-);
+    doc.save(
+        "Listado_Vacaciones.pdf"
+    );
 
 
 }
@@ -943,74 +943,74 @@ doc.save(
 // GENERAR BOLETA INDIVIDUAL
 //--------------------------------
 
-async function generarBoleta(id){
+async function generarBoleta(id) {
 
 
-const vacacion = vacaciones.find(
-v=>v.id===id
-);
-
-
-
-if(!vacacion){
-
-    Swal.fire(
-        "Error",
-        "No se encontró la información",
-        "error"
+    const vacacion = vacaciones.find(
+        v => v.id === id
     );
 
-    return;
-
-}
 
 
+    if (!vacacion) {
 
-// asignar (o recuperar) el número consecutivo
+        Swal.fire(
+            "Error",
+            "No se encontró la información",
+            "error"
+        );
 
-const correlativo =
-await obtenerCorrelativoBoleta(vacacion);
+        return;
 
-
-
-const {jsPDF}=window.jspdf;
-
-
-const doc = new jsPDF();
+    }
 
 
 
-//--------------------------------
-// LOGO (opcional)
-//--------------------------------
+    // asignar (o recuperar) el número consecutivo
 
-// Coloca aquí la ruta de tu logo
-
-const logo = "assets/logo.jpg";
+    const correlativo =
+        await obtenerCorrelativoBoleta(vacacion);
 
 
 
-const imgReady = new Image();
-
-imgReady.crossOrigin = "anonymous";
-
-imgReady.src = logo;
+    const { jsPDF } = window.jspdf;
 
 
-
-imgReady.onload = function(){
-
-    crearContenidoBoleta(doc, vacacion, imgReady, correlativo);
-
-};
+    const doc = new jsPDF();
 
 
 
-imgReady.onerror = function(){
+    //--------------------------------
+    // LOGO (opcional)
+    //--------------------------------
 
-    crearContenidoBoleta(doc, vacacion, null, correlativo);
+    // Coloca aquí la ruta de tu logo
 
-};
+    const logo = "assets/logo.jpg";
+
+
+
+    const imgReady = new Image();
+
+    imgReady.crossOrigin = "anonymous";
+
+    imgReady.src = logo;
+
+
+
+    imgReady.onload = function () {
+
+        crearContenidoBoleta(doc, vacacion, imgReady, correlativo);
+
+    };
+
+
+
+    imgReady.onerror = function () {
+
+        crearContenidoBoleta(doc, vacacion, null, correlativo);
+
+    };
 
 
 }
@@ -1022,368 +1022,385 @@ imgReady.onerror = function(){
 // CONTENIDO BOLETA (diseño mejorado)
 //--------------------------------
 
-function crearContenidoBoleta(doc, v, logoImg, correlativo){
+function crearContenidoBoleta(doc, v, logoImg, correlativo) {
 
 
-// Paleta de colores
-const azulOscuro   = [21, 61, 107];   // encabezado
-const azulClaro    = [235, 242, 250]; // fondo de filas
-const grisTexto    = [70, 70, 70];
-const grisLinea    = [190, 190, 190];
-const verdeDestaque= [39, 128, 74];
+    // Paleta de colores
+    const azulOscuro = [21, 61, 107];   // encabezado
+    const azulClaro = [235, 242, 250]; // fondo de filas
+    const grisTexto = [70, 70, 70];
+    const grisLinea = [190, 190, 190];
+    const verdeDestaque = [39, 128, 74];
 
 
-const anchoPagina = doc.internal.pageSize.getWidth();
-const margen = 15;
+    const anchoPagina = doc.internal.pageSize.getWidth();
+    const margen = 15;
 
 
-// Nombre de quien firma como Presidente Junta Directiva
-const nombrePresidente = "Alfonso Barrantes Rodríguez";
+    // Nombre de quien firma como Presidente Junta Directiva
+    const nombrePresidente = "Alfonso Barrantes Rodríguez";
 
 
 
-//--------------------------------
-// ENCABEZADO CON FRANJA DE COLOR
-//--------------------------------
+    //--------------------------------
+    // ENCABEZADO CON FRANJA DE COLOR
+    //--------------------------------
 
-doc.setFillColor(...azulOscuro);
-doc.rect(0, 0, anchoPagina, 44, "F");
+    doc.setFillColor(...azulOscuro);
+    doc.rect(0, 0, anchoPagina, 44, "F");
 
 
-if(logoImg){
+    if (logoImg) {
 
-    try{
+        try {
 
-        doc.addImage(logoImg, "PNG", margen, 8, 26, 26);
+            doc.addImage(logoImg, "PNG", margen, 8, 26, 26);
 
-    }catch(e){}
+        } catch (e) { }
+
+    }
+
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.text(
+        "Asociación Administradora del Acueducto y Alcantarillado",
+        anchoPagina / 2,
+        9,
+        { align: "center" }
+    );
+    doc.text(
+        "Sanitario de los Ángeles de Grecia",
+        anchoPagina / 2,
+        14.5,
+        { align: "center" }
+    );
+
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(
+        "BOLETA DE VACACIONES",
+        anchoPagina / 2,
+        26,
+        { align: "center" }
+    );
+
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(
+        "Documento oficial de aprobación de vacaciones",
+        anchoPagina / 2,
+        33,
+        { align: "center" }
+    );
+
+
+    // Número consecutivo, esquina superior izquierda (sobre el logo)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(
+        "N.° " + correlativo,
+        anchoPagina - margen,
+        8,
+        { align: "right" }
+    );
+
+
+    // Fecha de emisión, esquina superior derecha
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text(
+        "Emitido: " + formatearFecha(new Date().toISOString().split("T")[0]),
+        anchoPagina - margen,
+        14,
+        { align: "right" }
+    );
+
+
+
+    //--------------------------------
+    // SECCIÓN: DATOS DEL FUNCIONARIO
+    //--------------------------------
+
+    let y = 58;
+
+
+    doc.setTextColor(...azulOscuro);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Datos del funcionario", margen, y);
+
+
+    doc.setDrawColor(...azulOscuro);
+    doc.setLineWidth(0.6);
+    doc.line(margen, y + 2, anchoPagina - margen, y + 2);
+
+
+    y += 12;
+
+
+    const altoFila = 10;
+    const anchoEtiqueta = 55;
+
+
+    // ── Datos generales (fecha de ingreso arriba) ──
+
+    const filasDatos = [
+        ["Fecha de ingreso", formatearFecha(v.fechaIngreso)],
+        ["Nombre completo", v.nombre],
+        ["Cédula", v.cedula],
+        ["Puesto / Ocupación", v.puesto || "-"],
+    ];
+
+
+    filasDatos.forEach((fila, i) => {
+
+        const yFila = y + i * altoFila;
+
+        if (i % 2 === 0) {
+
+            doc.setFillColor(...azulClaro);
+            doc.rect(margen, yFila - 6, anchoPagina - margen * 2, altoFila, "F");
+
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(...grisTexto);
+        doc.text(fila[0], margen + 3, yFila);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(String(fila[1]), margen + anchoEtiqueta, yFila);
+
+    });
+
+
+    y += filasDatos.length * altoFila + 8;
+
+
+    // ── Subtítulo: Solicita vacaciones (mismo estilo que "Datos del funcionario") ──
+
+    doc.setTextColor(...azulOscuro);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Solicita vacaciones", margen, y);
+
+    doc.setDrawColor(...azulOscuro);
+    doc.setLineWidth(0.6);
+    doc.line(margen, y + 2, anchoPagina - margen, y + 2);
+
+    y += 12;
+
+
+    const filasFechas = [
+        ["Del", formatearFecha(v.fechaSalida)],
+        ["Al", formatearFecha(v.fechaRegreso)],
+        ["Fecha de Regreso", formatearFecha(sumarUnDia(v.fechaRegreso))],
+    ];
+
+
+    filasFechas.forEach((fila, i) => {
+
+        const yFila = y + i * altoFila;
+
+        if (i % 2 === 0) {
+
+            doc.setFillColor(...azulClaro);
+            doc.rect(margen, yFila - 6, anchoPagina - margen * 2, altoFila, "F");
+
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(...grisTexto);
+        doc.text(fila[0], margen + 3, yFila);
+
+        doc.setFont("helvetica", "normal");
+        doc.text(String(fila[1]), margen + anchoEtiqueta, yFila);
+
+    });
+
+
+    y += filasFechas.length * altoFila + 10;
+
+
+
+    //--------------------------------
+    // DESTACADO: DÍAS DISPONIBLES / DISFRUTADOS / RESTANTES
+    //--------------------------------
+
+    const diasDisponibles =
+        Number(v.diasTomados || 0) + Number(v.diasRestantes || 0);
+
+
+    const azulDestaque = [21, 61, 107];
+
+
+    doc.setTextColor(...azulOscuro);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("Desglose de vacaciones", margen, y);
+
+    doc.setDrawColor(...azulOscuro);
+    doc.setLineWidth(0.6);
+    doc.line(margen, y + 2, anchoPagina - margen, y + 2);
+
+    y += 12;
+
+
+    const columnas = [
+        { titulo: "Días disponibles", valor: diasDisponibles, color: azulDestaque },
+        { titulo: "Días disfrutados", valor: v.diasTomados, color: verdeDestaque },
+        { titulo: "Días restantes", valor: v.diasRestantes, color: [176, 58, 46] },
+    ];
+
+
+    const anchoTotal = anchoPagina - margen * 2;
+    const espacio = 5;
+    const anchoCol = (anchoTotal - espacio * 2) / 3;
+    const altoCol = 26;
+
+
+    columnas.forEach((col, i) => {
+
+        const x = margen + i * (anchoCol + espacio);
+
+        doc.setFillColor(...col.color);
+        doc.roundedRect(x, y, anchoCol, altoCol, 2, 2, "F");
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text(col.titulo, x + anchoCol / 2, y + 9, { align: "center" });
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(15);
+        doc.text(String(col.valor), x + anchoCol / 2, y + 19, { align: "center" });
+
+    });
+
+
+    y += altoCol + 12;
+
+
+
+    //--------------------------------
+    // FECHA DE APROBACIÓN
+    //--------------------------------
+
+    doc.setTextColor(...grisTexto);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10.5);
+
+
+
+    y += 34;
+
+
+
+    //--------------------------------
+    // FIRMAS
+    //--------------------------------
+
+    doc.setDrawColor(...grisLinea);
+    doc.setLineWidth(0.4);
+
+
+    doc.line(margen, y, margen + 70, y);
+    doc.line(anchoPagina - margen - 70, y, anchoPagina - margen, y);
+
+
+    // Etiqueta debajo de la línea
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...grisTexto);
+
+    doc.text(
+        "Firma persona que toma vacaciones",
+        margen + 35,
+        y + 6,
+        { align: "center" }
+    );
+
+    doc.text(
+        "Presidente Junta Directiva",
+        anchoPagina - margen - 35,
+        y + 6,
+        { align: "center" }
+    );
+
+
+    // Nombre correspondiente debajo de la etiqueta
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...grisTexto);
+
+    doc.text(
+        v.nombre,
+        margen + 35,
+        y + 13,
+        { align: "center" }
+    );
+
+    doc.text(
+        nombrePresidente,
+        anchoPagina - margen - 35,
+        y + 13,
+        { align: "center" }
+    );
+
+
+
+    //--------------------------------
+    // PIE DE PÁGINA
+    //--------------------------------
+
+    const altoPagina = doc.internal.pageSize.getHeight();
+
+    doc.setDrawColor(...grisLinea);
+    doc.setLineWidth(0.2);
+    doc.line(margen, altoPagina - 15, anchoPagina - margen, altoPagina - 15);
+
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(
+        "Documento generado automáticamente por el sistema de gestión de vacaciones",
+        anchoPagina / 2,
+        altoPagina - 10,
+        { align: "center" }
+    );
+
+
+
+    //--------------------------------
+    // GUARDAR
+    //--------------------------------
+
+    doc.save(
+        correlativo + "_Boleta_Vacaciones_" + v.nombre + ".pdf"
+    );
+
 
 }
 
-
-doc.setTextColor(255,255,255);
-doc.setFont("helvetica","bold");
-doc.setFontSize(10.5);
-doc.text(
-    "Asociación Administradora del Acueducto y Alcantarillado",
-    anchoPagina/2,
-    9,
-    { align:"center" }
-);
-doc.text(
-    "Sanitario de los Ángeles de Grecia",
-    anchoPagina/2,
-    14.5,
-    { align:"center" }
-);
-
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(16);
-doc.text(
-    "BOLETA DE VACACIONES",
-    anchoPagina/2,
-    26,
-    { align:"center" }
-);
-
-
-doc.setFont("helvetica","normal");
-doc.setFontSize(9);
-doc.text(
-    "Documento oficial de aprobación de vacaciones",
-    anchoPagina/2,
-    33,
-    { align:"center" }
-);
-
-
-// Número consecutivo, esquina superior izquierda (sobre el logo)
-doc.setFont("helvetica","bold");
-doc.setFontSize(9);
-doc.text(
-    "N.° " + correlativo,
-    anchoPagina - margen,
-    8,
-    { align:"right" }
-);
-
-
-// Fecha de emisión, esquina superior derecha
-doc.setFont("helvetica","normal");
-doc.setFontSize(8.5);
-doc.text(
-    "Emitido: " + formatearFecha(new Date().toISOString().split("T")[0]),
-    anchoPagina - margen,
-    14,
-    { align:"right" }
-);
-
-
-
 //--------------------------------
-// SECCIÓN: DATOS DEL FUNCIONARIO
+// PRECARGAR BUSQUEDA DESDE EL CALENDARIO
 //--------------------------------
 
-let y = 58;
+function precargarBusquedaDesdeURL(){
 
+    const params = new URLSearchParams(window.location.search);
+    const nombre = params.get("buscar");
 
-doc.setTextColor(...azulOscuro);
-doc.setFont("helvetica","bold");
-doc.setFontSize(13);
-doc.text("Datos del funcionario", margen, y);
+    if(!nombre) return;
 
-
-doc.setDrawColor(...azulOscuro);
-doc.setLineWidth(0.6);
-doc.line(margen, y+2, anchoPagina-margen, y+2);
-
-
-y += 12;
-
-
-const altoFila = 10;
-const anchoEtiqueta = 55;
-
-
-// ── Datos generales (fecha de ingreso arriba) ──
-
-const filasDatos = [
-    ["Fecha de ingreso", formatearFecha(v.fechaIngreso)],
-    ["Nombre completo", v.nombre],
-    ["Cédula", v.cedula],
-    ["Puesto / Ocupación", v.puesto || "-"],
-];
-
-
-filasDatos.forEach((fila, i)=>{
-
-    const yFila = y + i*altoFila;
-
-    if(i % 2 === 0){
-
-        doc.setFillColor(...azulClaro);
-        doc.rect(margen, yFila-6, anchoPagina - margen*2, altoFila, "F");
-
-    }
-
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(10.5);
-    doc.setTextColor(...grisTexto);
-    doc.text(fila[0], margen+3, yFila);
-
-    doc.setFont("helvetica","normal");
-    doc.text(String(fila[1]), margen+anchoEtiqueta, yFila);
-
-});
-
-
-y += filasDatos.length*altoFila + 8;
-
-
-// ── Subtítulo: Solicita vacaciones (mismo estilo que "Datos del funcionario") ──
-
-doc.setTextColor(...azulOscuro);
-doc.setFont("helvetica","bold");
-doc.setFontSize(13);
-doc.text("Solicita vacaciones", margen, y);
-
-doc.setDrawColor(...azulOscuro);
-doc.setLineWidth(0.6);
-doc.line(margen, y+2, anchoPagina-margen, y+2);
-
-y += 12;
-
-
-const filasFechas = [
-    ["Del", formatearFecha(v.fechaSalida)],
-    ["Al", formatearFecha(v.fechaRegreso)],
-    ["Fecha de Regreso", formatearFecha(sumarUnDia(v.fechaRegreso))],
-];
-
-
-filasFechas.forEach((fila, i)=>{
-
-    const yFila = y + i*altoFila;
-
-    if(i % 2 === 0){
-
-        doc.setFillColor(...azulClaro);
-        doc.rect(margen, yFila-6, anchoPagina - margen*2, altoFila, "F");
-
-    }
-
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(10.5);
-    doc.setTextColor(...grisTexto);
-    doc.text(fila[0], margen+3, yFila);
-
-    doc.setFont("helvetica","normal");
-    doc.text(String(fila[1]), margen+anchoEtiqueta, yFila);
-
-});
-
-
-y += filasFechas.length*altoFila + 10;
-
-
-
-//--------------------------------
-// DESTACADO: DÍAS DISPONIBLES / DISFRUTADOS / RESTANTES
-//--------------------------------
-
-const diasDisponibles =
-    Number(v.diasTomados||0) + Number(v.diasRestantes||0);
-
-
-const azulDestaque = [21, 61, 107];
-
-
-doc.setTextColor(...azulOscuro);
-doc.setFont("helvetica","bold");
-doc.setFontSize(13);
-doc.text("Desglose de vacaciones", margen, y);
-
-doc.setDrawColor(...azulOscuro);
-doc.setLineWidth(0.6);
-doc.line(margen, y+2, anchoPagina-margen, y+2);
-
-y += 12;
-
-
-const columnas = [
-    { titulo:"Días disponibles", valor:diasDisponibles, color:azulDestaque },
-    { titulo:"Días disfrutados", valor:v.diasTomados,   color:verdeDestaque },
-    { titulo:"Días restantes",   valor:v.diasRestantes, color:[176, 58, 46] },
-];
-
-
-const anchoTotal = anchoPagina - margen*2;
-const espacio = 5;
-const anchoCol = (anchoTotal - espacio*2) / 3;
-const altoCol = 26;
-
-
-columnas.forEach((col, i)=>{
-
-    const x = margen + i*(anchoCol + espacio);
-
-    doc.setFillColor(...col.color);
-    doc.roundedRect(x, y, anchoCol, altoCol, 2, 2, "F");
-
-    doc.setTextColor(255,255,255);
-    doc.setFont("helvetica","normal");
-    doc.setFontSize(9);
-    doc.text(col.titulo, x + anchoCol/2, y+9, { align:"center" });
-
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(15);
-    doc.text(String(col.valor), x + anchoCol/2, y+19, { align:"center" });
-
-});
-
-
-y += altoCol + 12;
-
-
-
-//--------------------------------
-// FECHA DE APROBACIÓN
-//--------------------------------
-
-doc.setTextColor(...grisTexto);
-doc.setFont("helvetica","normal");
-doc.setFontSize(10.5);
-
-
-
-y += 34;
-
-
-
-//--------------------------------
-// FIRMAS
-//--------------------------------
-
-doc.setDrawColor(...grisLinea);
-doc.setLineWidth(0.4);
-
-
-doc.line(margen, y, margen+70, y);
-doc.line(anchoPagina-margen-70, y, anchoPagina-margen, y);
-
-
-// Etiqueta debajo de la línea
-
-doc.setFont("helvetica","normal");
-doc.setFontSize(9.5);
-doc.setTextColor(...grisTexto);
-
-doc.text(
-    "Firma persona que toma vacaciones",
-    margen+35,
-    y+6,
-    { align:"center" }
-);
-
-doc.text(
-    "Presidente Junta Directiva",
-    anchoPagina-margen-35,
-    y+6,
-    { align:"center" }
-);
-
-
-// Nombre correspondiente debajo de la etiqueta
-
-doc.setFont("helvetica","bold");
-doc.setFontSize(10);
-doc.setTextColor(...grisTexto);
-
-doc.text(
-    v.nombre,
-    margen+35,
-    y+13,
-    { align:"center" }
-);
-
-doc.text(
-    nombrePresidente,
-    anchoPagina-margen-35,
-    y+13,
-    { align:"center" }
-);
-
-
-
-//--------------------------------
-// PIE DE PÁGINA
-//--------------------------------
-
-const altoPagina = doc.internal.pageSize.getHeight();
-
-doc.setDrawColor(...grisLinea);
-doc.setLineWidth(0.2);
-doc.line(margen, altoPagina-15, anchoPagina-margen, altoPagina-15);
-
-doc.setFontSize(8);
-doc.setTextColor(150,150,150);
-doc.text(
-    "Documento generado automáticamente por el sistema de gestión de vacaciones",
-    anchoPagina/2,
-    altoPagina-10,
-    { align:"center" }
-);
-
-
-
-//--------------------------------
-// GUARDAR
-//--------------------------------
-
-doc.save(
-    correlativo + "_Boleta_Vacaciones_"+v.nombre+".pdf"
-);
-
+    const input = document.getElementById("buscar");
+    input.value = nombre;
+    filtrar();
 
 }
