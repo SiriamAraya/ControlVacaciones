@@ -22,9 +22,6 @@ const db = admin.database();
 //──────────────────────────────
 // ACUMULAR VACACIONES SEGÚN FECHA DE INGRESO
 //──────────────────────────────
-// Misma lógica que en registrarPersonal.js, pero corriendo
-// desde un servidor (GitHub Actions) en lugar del navegador.
-//──────────────────────────────
 
 async function actualizarVacacionesAcumuladas(){
 
@@ -38,40 +35,63 @@ async function actualizarVacacionesAcumuladas(){
     const datos = snap.val();
     const hoy = new Date();
 
+    console.log(`Fecha ejecución: ${hoy.toISOString()}`);
+    console.log(`Mes actual (0-11): ${hoy.getMonth()}, Día: ${hoy.getDate()}`);
+    console.log(`Total personas: ${Object.keys(datos).length}`);
+    console.log("---");
+
     let actualizados = 0;
+    let omitidos = 0;
 
     for(const id in datos){
 
         const persona = datos[id];
 
-        if(!persona.fechaIngreso)
+        if(!persona.fechaIngreso){
+            console.log(`[SALTADO] ${persona.nombre || id}: sin fechaIngreso`);
+            omitidos++;
             continue;
+        }
 
         const ingreso = new Date(persona.fechaIngreso);
         const diaAniversario = ingreso.getDate();
+        const mesIngreso = ingreso.getMonth();
+        const anioIngreso = ingreso.getFullYear();
 
-        // Aún no llega el día del mes en que toca sumar
-        if(hoy.getDate() < diaAniversario)
+        if(isNaN(diaAniversario)){
+            console.log(`[SALTADO] ${persona.nombre}: fechaIngreso inválida ("${persona.fechaIngreso}")`);
+            omitidos++;
             continue;
+        }
 
-        // Evitar sumar en el mismo mes en que fue registrada
+        if(hoy.getDate() < diaAniversario){
+            console.log(`[SALTADO] ${persona.nombre}: hoy (${hoy.getDate()}) < día aniversario (${diaAniversario})`);
+            omitidos++;
+            continue;
+        }
+
         const mismoMesQueIngreso =
-            hoy.getFullYear() === ingreso.getFullYear() &&
-            hoy.getMonth() === ingreso.getMonth();
+            hoy.getFullYear() === anioIngreso &&
+            hoy.getMonth() === mesIngreso;
 
-        if(mismoMesQueIngreso)
+        if(mismoMesQueIngreso){
+            console.log(`[SALTADO] ${persona.nombre}: mismo mes de ingreso (mes ${mesIngreso}/${anioIngreso})`);
+            omitidos++;
             continue;
+        }
 
-        // Ya se actualizó este mismo mes/año
         const yaActualizado =
             persona.ultimoMesActualizado === hoy.getMonth() &&
             persona.ultimoAnioActualizado === hoy.getFullYear();
 
-        if(yaActualizado)
+        if(yaActualizado){
+            console.log(`[SALTADO] ${persona.nombre}: ya actualizado este mes (ultimoMes=${persona.ultimoMesActualizado}, ultimoAnio=${persona.ultimoAnioActualizado})`);
+            omitidos++;
             continue;
+        }
 
-        const nuevoSaldo =
-            Number(persona.saldoVacaciones || 0) + 1;
+        const saldoActual = Number(persona.saldoVacaciones || 0);
+        const nuevoSaldo = saldoActual + 1;
 
         await db.ref("personal/" + id).update({
 
@@ -84,12 +104,13 @@ async function actualizarVacacionesAcumuladas(){
         actualizados++;
 
         console.log(
-            `Se sumó 1 día a ${persona.nombre} (nuevo saldo: ${nuevoSaldo})`
+            `[ACTUALIZADO] ${persona.nombre}: saldo ${saldoActual} → ${nuevoSaldo} (ingreso: ${persona.fechaIngreso}, aniversario día ${diaAniversario})`
         );
 
     }
 
-    console.log(`Proceso terminado. Personas actualizadas: ${actualizados}`);
+    console.log("---");
+    console.log(`Proceso terminado. Actualizados: ${actualizados}, Omitidos: ${omitidos}`);
 
 }
 
