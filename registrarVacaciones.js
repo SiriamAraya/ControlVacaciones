@@ -49,9 +49,12 @@ window.onload = function () {
 
 
 
-    const hoy = new Date()
-    .toISOString()
-    .split("T")[0];
+    const ahora = new Date();
+
+    const hoy =
+    ahora.getFullYear()+"-"+
+    String(ahora.getMonth()+1).padStart(2,"0")+"-"+
+    String(ahora.getDate()).padStart(2,"0");
 
 
 
@@ -196,6 +199,30 @@ function seleccionarPersona(id){
 
 
 //-------------------------------------
+// PARSEAR FECHA EN HORA LOCAL
+// (evita el desfase de zona horaria
+// de new Date("YYYY-MM-DD"))
+//-------------------------------------
+
+function parseFechaLocal(cadena){
+
+
+    const partes = cadena.split("-");
+
+
+    return new Date(
+        Number(partes[0]),
+        Number(partes[1])-1,
+        Number(partes[2])
+    );
+
+
+}
+
+
+
+
+//-------------------------------------
 // CONTAR DIAS HABILES (sin sábados ni domingos)
 //-------------------------------------
 
@@ -265,9 +292,9 @@ function calcularDias(){
 
 
 
-    const fechaSalida = new Date(salida);
+    const fechaSalida = parseFechaLocal(salida);
 
-    const fechaRegreso = new Date(regreso);
+    const fechaRegreso = parseFechaLocal(regreso);
 
 
 
@@ -718,12 +745,12 @@ async function validarVacacionesExistentes(
 
 
     const nuevaSalidaFecha =
-    new Date(nuevaSalida);
+    parseFechaLocal(nuevaSalida);
 
 
 
     const nuevoRegresoFecha =
-    new Date(nuevoRegreso);
+    parseFechaLocal(nuevoRegreso);
 
 
 
@@ -735,12 +762,12 @@ async function validarVacacionesExistentes(
 
 
         const salidaExistente =
-        new Date(vacacion.fechaSalida);
+        parseFechaLocal(vacacion.fechaSalida);
 
 
 
         const regresoExistente =
-        new Date(vacacion.fechaRegreso);
+        parseFechaLocal(vacacion.fechaRegreso);
 
 
 
